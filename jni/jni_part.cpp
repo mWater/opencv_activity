@@ -26,49 +26,40 @@ using namespace cv;
 
 extern "C" {
 
-JNIEXPORT void JNICALL Java_co_mwater_opencvapp_Process(JNIEnv* env, jobject bitmap) {
-	AndroidBitmapInfo  bitmap_info;
-	void*              bitmap_pixels;
+JNIEXPORT void JNICALL Java_co_mwater_opencvapp_OpenCVActivity_runProcess(JNIEnv* env, jobject activity, jobject screen_bitmap) {
+	AndroidBitmapInfo  screen_bitmap_info;
+	void*              screen_bitmap_pixels;
 	int ret;
 
-	if ((ret = AndroidBitmap_getInfo(env, bitmap, &bitmap_info)) < 0) {
+	jclass cls = env->FindClass("android/graphics/Bitmap");
+	jmethodID mth = env->GetMethodID(cls, "getWidth", "()I");
+	int width = env->CallIntMethod(screen_bitmap, mth);
+	LOGI("width=%d", width);
+
+	if ((ret = AndroidBitmap_getInfo(env, screen_bitmap, &screen_bitmap_info)) < 0) {
 		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
 	    return;
 	}
+	LOGI("ret=%d", ret);
+	LOGI("info=%d, %d : %d", screen_bitmap_info.width, screen_bitmap_info.height, screen_bitmap_info.stride);
+	if (screen_bitmap_info.width == 0)
+		return;
 
+	if ((ret = AndroidBitmap_lockPixels(env, screen_bitmap, &screen_bitmap_pixels)) < 0) {
+		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+	}
 
-}
+	// Create Mat
+	Mat screen(
+			Size(screen_bitmap_info.width, screen_bitmap_info.height),
+			CV_8UC4, screen_bitmap_pixels);// , screen_bitmap_info.stride);
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_tutorial3_Sample3Native_FindFeatures(JNIEnv*, jobject, jlong addrGray, jlong addrRgba);
+	LOGI("Drawing on mat %d, %d", screen.cols, screen.rows);
+	//LOGI("Val = %d", screen.at<Vec4d>(10, 10)[0]);
+	// Draw circle
+	circle(screen, Point(100,100), 20, Scalar(255, 0, 0, 255), 5);
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_tutorial3_Sample3Native_FindFeatures(JNIEnv*, jobject, jlong addrGray, jlong addrRgba)
-{
-    Mat& mGr  = *(Mat*)addrGray;
-    Mat& mRgb = *(Mat*)addrRgba;
-    vector<KeyPoint> v;
-
-    // Get input and output arrays
-//	jbyte* _yuv = env->GetByteArrayElements(yuv, 0);
-//	jint* _bgra = env->GetIntArrayElements(bgra, 0);
-//
-//	Mat myuv(height + height / 2, width, CV_8UC1, (unsigned char *) _yuv);
-//	Mat mbgra(height, width, CV_8UC4, (unsigned char *) _bgra);
-//
-//	// Please pay attention to BGRA byte order
-//	// ARGB stored in java as int array becomes BGRA at native level
-//	cvtColor(myuv, mbgra, CV_YUV420sp2BGR, 4);
-//
-//	createPreview(mbgra);
-//
-//	env->ReleaseIntArrayElements(bgra, _bgra, 0);
-//	env->ReleaseByteArrayElements(yuv, _yuv, 0);
-
-    FastFeatureDetector detector(50);
-    detector.detect(mGr, v);
-    for( unsigned int i = 0; i < v.size(); i++ )
-    {
-        const KeyPoint& kp = v[i];
-        circle(mRgb, Point(kp.pt.x, kp.pt.y), 10, Scalar(255,0,0,255));
-    }
+	LOGI("unlocking pixels");
+	AndroidBitmap_unlockPixels(env, screen_bitmap);
 }
 }
