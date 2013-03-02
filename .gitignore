@@ -14,3 +14,7 @@ gen/
 
 # Local configuration file (sdk path, etc)
 local.properties
+
+# Build libraries
+obj/local/armeabi-v7a
+libs/armeabi-v7a
