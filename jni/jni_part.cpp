@@ -25,9 +25,9 @@ using namespace cv;
 #endif
 
 
-class OpenCVAppContext {
+class OpenCVActivityContext {
 public:
-	virtual ~OpenCVAppContext() {}
+	virtual ~OpenCVActivityContext() {}
 
 	virtual string getParam(int n) = 0;
 	virtual int getParamCount() = 0;
@@ -40,9 +40,9 @@ public:
 	virtual bool isAborted() = 0;
 };
 
-class AndroidOpenCVAppContext : public OpenCVAppContext {
+class AndroidOpenCVActivityContext : public OpenCVActivityContext {
 public:
-	AndroidOpenCVAppContext(JNIEnv* env, jobject activity, jobjectArray params, jobject screen_bitmap) :
+	AndroidOpenCVActivityContext(JNIEnv* env, jobject activity, jobjectArray params, jobject screen_bitmap) :
 		screen_bitmap(screen_bitmap), params(params), activity(activity) {
 		this->env = env;
 
@@ -65,7 +65,7 @@ public:
 
 	}
 
-	~AndroidOpenCVAppContext() {
+	~AndroidOpenCVActivityContext() {
 		LOGI("unlocking pixels");
 		AndroidBitmap_unlockPixels(env, screen_bitmap);
 	}
@@ -114,7 +114,7 @@ private:
 	jobject activity;
 };
 
-void sampleAlgo(OpenCVAppContext& context) {
+void sampleAlgo(OpenCVActivityContext& context) {
 	Ptr<Mat> screen = context.getScreen();
 
 	putText(*screen, "Processing...", Point(30,30), FONT_HERSHEY_PLAIN,
@@ -135,7 +135,7 @@ void sampleAlgo(OpenCVAppContext& context) {
 extern "C" {
 
 JNIEXPORT jstring JNICALL Java_co_mwater_opencvactivity_OpenCVActivity_runProcess(JNIEnv* env, jobject activity, jstring id, jobjectArray params, jobject screen_bitmap) {
-	AndroidOpenCVAppContext context(env, activity, params, screen_bitmap);
+	AndroidOpenCVActivityContext context(env, activity, params, screen_bitmap);
 
 	const char* utf_id = env->GetStringUTFChars(id, NULL);
 
