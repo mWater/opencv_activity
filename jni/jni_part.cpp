@@ -11,7 +11,7 @@
 using namespace std;
 using namespace cv;
 
-#define LOG_TAG "co.mwater.opencvapp"
+#define LOG_TAG "co.mwater.opencvactivity"
 #ifdef ANDROID
 #include <android/log.h>
 #  define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -93,13 +93,13 @@ public:
 	}
 
 	void updateScreen() {
-		jclass cls = env->FindClass("co/mwater/opencvapp/OpenCVActivity");
+		jclass cls = env->FindClass("co/mwater/opencvactivity/OpenCVActivity");
 		jmethodID mth = env->GetMethodID(cls, "updateScreen", "()V");
 		env->CallVoidMethod(activity, mth);
 	}
 
 	bool isAborted() {
-		jclass cls = env->FindClass("co/mwater/opencvapp/OpenCVActivity");
+		jclass cls = env->FindClass("co/mwater/opencvactivity/OpenCVActivity");
 		jfieldID field = env->GetFieldID(cls, "aborted", "Z");
 		return env->GetBooleanField(activity, field);
 	}
@@ -134,7 +134,7 @@ void sampleAlgo(OpenCVAppContext& context) {
 
 extern "C" {
 
-JNIEXPORT jstring JNICALL Java_co_mwater_opencvapp_OpenCVActivity_runProcess(JNIEnv* env, jobject activity, jstring id, jobjectArray params, jobject screen_bitmap) {
+JNIEXPORT jstring JNICALL Java_co_mwater_opencvactivity_OpenCVActivity_runProcess(JNIEnv* env, jobject activity, jstring id, jobjectArray params, jobject screen_bitmap) {
 	AndroidOpenCVAppContext context(env, activity, params, screen_bitmap);
 
 	const char* utf_id = env->GetStringUTFChars(id, NULL);
