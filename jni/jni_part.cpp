@@ -3,6 +3,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <vector>
+#include <unistd.h>
 
 #include <android/log.h>
 #include <android/bitmap.h>
@@ -24,42 +25,125 @@ using namespace cv;
 #endif
 
 
+class OpenCVAppContext {
+public:
+	virtual ~OpenCVAppContext() {}
+
+	virtual string getParam(int n) = 0;
+	virtual int getParamCount() = 0;
+
+	virtual void setReturnValue(string val) = 0;
+
+	virtual Ptr<Mat> getScreen() = 0;
+	virtual void updateScreen() = 0;
+
+	virtual bool isAborted() = 0;
+};
+
+class AndroidOpenCVAppContext : public OpenCVAppContext {
+public:
+	AndroidOpenCVAppContext(JNIEnv* env, jobject activity, jobjectArray params, jobject screen_bitmap) :
+		screen_bitmap(screen_bitmap), params(params), activity(activity) {
+		this->env = env;
+
+		AndroidBitmapInfo  screen_bitmap_info;
+		void*              screen_bitmap_pixels;
+		int ret;
+
+		if ((ret = AndroidBitmap_getInfo(env, screen_bitmap, &screen_bitmap_info)) < 0) {
+			LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
+		    return;
+		}
+		if ((ret = AndroidBitmap_lockPixels(env, screen_bitmap, &screen_bitmap_pixels)) < 0) {
+			LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+		}
+
+		// Create Mat
+		screen = new Mat(
+				Size(screen_bitmap_info.width, screen_bitmap_info.height),
+				CV_8UC4, screen_bitmap_pixels);// , screen_bitmap_info.stride);
+
+	}
+
+	~AndroidOpenCVAppContext() {
+		LOGI("unlocking pixels");
+		AndroidBitmap_unlockPixels(env, screen_bitmap);
+	}
+
+	string getParam(int n) {
+		jobject elem = env->GetObjectArrayElement(params, n);
+		const char *s = env->GetStringUTFChars((jstring)elem, NULL);
+
+		string str = s;
+		env->ReleaseStringUTFChars((jstring)elem, s);
+
+		return str;
+	}
+
+	int getParamCount() {
+		return env->GetArrayLength(params);
+	}
+
+	void setReturnValue(string val) {
+		returnValue = val;
+	}
+
+	Ptr<Mat> getScreen() {
+		return screen;
+	}
+
+	void updateScreen() {
+		jclass cls = env->FindClass("co/mwater/opencvapp/OpenCVActivity");
+		jmethodID mth = env->GetMethodID(cls, "updateScreen", "()V");
+		env->CallVoidMethod(activity, mth);
+	}
+
+	bool isAborted() {
+		jclass cls = env->FindClass("co/mwater/opencvapp/OpenCVActivity");
+		jfieldID field = env->GetFieldID(cls, "aborted", "Z");
+		return env->GetBooleanField(activity, field);
+	}
+
+	string returnValue;
+
+private:
+	Ptr<Mat> screen;
+	jobject screen_bitmap;
+	jobjectArray params;
+	JNIEnv* env;
+	jobject activity;
+};
+
+void sampleAlgo(OpenCVAppContext& context) {
+	Ptr<Mat> screen = context.getScreen();
+
+	putText(*screen, "Processing...", Point(30,30), FONT_HERSHEY_PLAIN,
+			2, Scalar(0, 255, 0, 255));
+
+	// Animate circle
+	for (int i=0;i<100;i++)
+	{
+		circle(*screen, Point(100+i, 300), 20, Scalar(255, 0, 0, 255), 5);
+		context.updateScreen();
+		usleep(100000);
+	}
+	LOGI("Called with %s", context.getParam(0).c_str());
+
+	context.setReturnValue("test");
+}
+
 extern "C" {
 
-JNIEXPORT void JNICALL Java_co_mwater_opencvapp_OpenCVActivity_runProcess(JNIEnv* env, jobject activity, jobject screen_bitmap) {
-	AndroidBitmapInfo  screen_bitmap_info;
-	void*              screen_bitmap_pixels;
-	int ret;
+JNIEXPORT jstring JNICALL Java_co_mwater_opencvapp_OpenCVActivity_runProcess(JNIEnv* env, jobject activity, jstring id, jobjectArray params, jobject screen_bitmap) {
+	AndroidOpenCVAppContext context(env, activity, params, screen_bitmap);
 
-	jclass cls = env->FindClass("android/graphics/Bitmap");
-	jmethodID mth = env->GetMethodID(cls, "getWidth", "()I");
-	int width = env->CallIntMethod(screen_bitmap, mth);
-	LOGI("width=%d", width);
+	const char* utf_id = env->GetStringUTFChars(id, NULL);
 
-	if ((ret = AndroidBitmap_getInfo(env, screen_bitmap, &screen_bitmap_info)) < 0) {
-		LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
-	    return;
-	}
-	LOGI("ret=%d", ret);
-	LOGI("info=%d, %d : %d", screen_bitmap_info.width, screen_bitmap_info.height, screen_bitmap_info.stride);
-	if (screen_bitmap_info.width == 0)
-		return;
+	if (strcmp(utf_id, "test") == 0)
+		sampleAlgo(context);
 
-	if ((ret = AndroidBitmap_lockPixels(env, screen_bitmap, &screen_bitmap_pixels)) < 0) {
-		LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-	}
+	env->ReleaseStringUTFChars(id, utf_id);
 
-	// Create Mat
-	Mat screen(
-			Size(screen_bitmap_info.width, screen_bitmap_info.height),
-			CV_8UC4, screen_bitmap_pixels);// , screen_bitmap_info.stride);
-
-	LOGI("Drawing on mat %d, %d", screen.cols, screen.rows);
-	//LOGI("Val = %d", screen.at<Vec4d>(10, 10)[0]);
-	// Draw circle
-	circle(screen, Point(100,100), 20, Scalar(255, 0, 0, 255), 5);
-
-	LOGI("unlocking pixels");
-	AndroidBitmap_unlockPixels(env, screen_bitmap);
+	return env->NewStringUTF(context.returnValue.c_str());
 }
 }

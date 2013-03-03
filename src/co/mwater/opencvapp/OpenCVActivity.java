@@ -16,6 +16,9 @@ import android.view.View;
 public class OpenCVActivity extends Activity {
 	OpenCVView openCVView;
 	Bitmap bm;
+	Thread thread;
+	
+	boolean aborted = false;
 	
 	static {
 		System.loadLibrary("native_sample");
@@ -31,28 +34,54 @@ public class OpenCVActivity extends Activity {
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+		aborted = false;
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		aborted = true;
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.open_cv, menu);
 		return true;
 	}
 	
-	void initialize(int width, int height) {
+	void startProcess(int width, int height) {
 		// Create bitmap
 		bm = Bitmap.createBitmap(width, height, Config.ARGB_8888);
-		Log.d("co.mwater.opencvapp", "width: "+ bm.getWidth());
 
-		runProcess(bm);
-//		// SAMPLE
-//		Canvas c = new Canvas(bm);
-//		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//		paint.setColor(Color.RED);
-//		paint.setStrokeWidth((float) 5.0);
-//		c.drawCircle(100, 100, 20, paint);
+		// Run in separate thread
+		thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				String ret = runProcess("test", new String[] { "input" }, bm);
+				Log.d("co.mwater.opencvapp", "return:"+ret);
+			};
+		});
+		thread.start();
 	}
 
-	public native void runProcess(Bitmap bitmap);
-	
+	public native String runProcess(String id, String[] params, Bitmap bitmap);
+
+	/* Updates the bitmap of the screen */
+	void updateScreen() {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!aborted) {
+					Log.d("co.mwater.opencvapp", "Invalidating...");
+					openCVView.invalidate();
+				}
+			}
+		});
+	}
+
 	class OpenCVView extends View {
 		Paint paint;
 		
@@ -69,13 +98,13 @@ public class OpenCVActivity extends Activity {
 
 			// Initialize on first draw
 			if (bm == null) {
-				initialize(getWidth(), getHeight());
+				startProcess(getWidth(), getHeight());
 			}
 
 			// Copy bitmap
 			Rect dest = new Rect(0, 0, getWidth(), getHeight());
 			canvas.drawBitmap(bm, null, dest, paint);
 		}
-	}	
+	}
 }
 
