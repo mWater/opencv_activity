@@ -1,5 +1,9 @@
 package co.mwater.opencvactivity;
 
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.Window;
+
 import co.mwater.opencvactivity.R;
 import android.os.Bundle;
 import android.app.Activity;
@@ -10,10 +14,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 
-public class OpenCVActivity extends Activity {
+public class OpenCVActivity extends SherlockActivity {
 	OpenCVView openCVView;
 	Bitmap bm;
 	Thread thread;
@@ -27,7 +30,10 @@ public class OpenCVActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//setContentView(R.layout.activity_open_cv);
+
+		// Show progress spinner
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		setSupportProgressBarIndeterminateVisibility(true);
 		
 		openCVView = new OpenCVView(this);
 		setContentView(openCVView);
@@ -48,7 +54,7 @@ public class OpenCVActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.open_cv, menu);
+		getSupportMenuInflater().inflate(R.menu.open_cv, menu);
 		return true;
 	}
 	
