@@ -1,13 +1,15 @@
 package co.mwater.opencvactivity;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.Window;
 
 import co.mwater.opencvactivity.R;
 import android.os.Bundle;
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -17,9 +19,14 @@ import android.util.Log;
 import android.view.View;
 
 public class OpenCVActivity extends SherlockActivity {
+	private static final String TAG = OpenCVActivity.class.getSimpleName();
+	
 	OpenCVView openCVView;
 	Bitmap bm;
 	Thread thread;
+
+	String processId;
+	String[] processParams;
 	
 	boolean aborted = false;
 	
@@ -31,9 +38,17 @@ public class OpenCVActivity extends SherlockActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		// Get arguments
+		setTitle(this.getIntent().getStringExtra("title"));
+		processId = this.getIntent().getStringExtra("processId");
+		processParams = this.getIntent().getStringArrayExtra("processParams");
+		
 		// Show progress spinner
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setSupportProgressBarIndeterminateVisibility(true);
+		
+		// Hide icon
+		this.getSupportActionBar().setDisplayShowHomeEnabled(false);
 		
 		openCVView = new OpenCVView(this);
 		setContentView(openCVView);
@@ -43,6 +58,9 @@ public class OpenCVActivity extends SherlockActivity {
 	protected void onStart() {
 		super.onStart();
 		aborted = false;
+		
+		// Prevent orientation changes
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 	}
 	
 	@Override
@@ -66,8 +84,19 @@ public class OpenCVActivity extends SherlockActivity {
 		thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				String ret = runProcess("test", new String[] { "input" }, bm);
-				Log.d("co.mwater.opencvactivity", "return:"+ret);
+				final String ret = runProcess(processId, processParams, bm);
+				Log.d(TAG, "return:" + ret);
+				
+				// Finish intent
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+					    Intent intent=new Intent();
+					    intent.putExtra("result", ret);
+					    setResult(RESULT_OK, intent);
+					    finish();
+					}
+				});
 			};
 		});
 		thread.start();
@@ -81,7 +110,7 @@ public class OpenCVActivity extends SherlockActivity {
 			@Override
 			public void run() {
 				if (!aborted) {
-					Log.d("co.mwater.opencvactivity", "Invalidating...");
+					Log.d(TAG, "Invalidating...");
 					openCVView.invalidate();
 				}
 			}

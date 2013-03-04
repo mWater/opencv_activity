@@ -5,9 +5,17 @@
     android:orientation="vertical" >
 
     <Button
+        android:id="@+id/testDemo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="testDemo"
+        android:text="Test Demo" />
+
+    <Button
         android:id="@+id/test_ecplates"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="testECPlates"
         android:text="Test EC Plates" />
 
 </LinearLayout>

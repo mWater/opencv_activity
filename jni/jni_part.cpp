@@ -8,6 +8,8 @@
 #include <android/log.h>
 #include <android/bitmap.h>
 
+#include "ec-plates/algorithm.h"
+
 using namespace std;
 using namespace cv;
 
@@ -23,22 +25,6 @@ using namespace cv;
 #  define LOGI(...) {printf(__VA_ARGS__); printf("\r\n");}
 #  define LOGE(...) printf("E/" LOG_TAG "(" ")" __VA_ARGS__)
 #endif
-
-
-class OpenCVActivityContext {
-public:
-	virtual ~OpenCVActivityContext() {}
-
-	virtual string getParam(int n) = 0;
-	virtual int getParamCount() = 0;
-
-	virtual void setReturnValue(string val) = 0;
-
-	virtual Ptr<Mat> getScreen() = 0;
-	virtual void updateScreen() = 0;
-
-	virtual bool isAborted() = 0;
-};
 
 class AndroidOpenCVActivityContext : public OpenCVActivityContext {
 public:
@@ -114,7 +100,7 @@ private:
 	jobject activity;
 };
 
-void sampleAlgo(OpenCVActivityContext& context) {
+void demoAlgo(OpenCVActivityContext& context) {
 	Ptr<Mat> screen = context.getScreen();
 
 	putText(*screen, "Processing...", Point(30,30), FONT_HERSHEY_PLAIN,
@@ -139,8 +125,10 @@ JNIEXPORT jstring JNICALL Java_co_mwater_opencvactivity_OpenCVActivity_runProces
 
 	const char* utf_id = env->GetStringUTFChars(id, NULL);
 
-	if (strcmp(utf_id, "test") == 0)
-		sampleAlgo(context);
+	if (strcmp(utf_id, "demo") == 0)
+		demoAlgo(context);
+	if (strcmp(utf_id, "ec-plate") == 0)
+		analyseECPlate(context);
 
 	env->ReleaseStringUTFChars(id, utf_id);
 
