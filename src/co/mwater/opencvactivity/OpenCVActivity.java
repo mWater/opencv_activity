@@ -58,9 +58,6 @@ public class OpenCVActivity extends SherlockActivity {
 	protected void onStart() {
 		super.onStart();
 		aborted = false;
-		
-		// Prevent orientation changes
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 	}
 	
 	@Override
@@ -77,6 +74,9 @@ public class OpenCVActivity extends SherlockActivity {
 	}
 	
 	void startProcess(int width, int height) {
+		// Prevent orientation changes
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+		
 		// Create bitmap
 		bm = Bitmap.createBitmap(width, height, Config.ARGB_8888);
 
