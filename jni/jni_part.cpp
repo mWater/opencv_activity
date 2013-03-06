@@ -115,7 +115,7 @@ void demoAlgo(OpenCVActivityContext& context) {
 	}
 	LOGI("Called with %s", context.getParam(0).c_str());
 
-	context.setReturnValue("test");
+	context.setReturnValue("{\"test\:5}");
 }
 
 extern "C" {

@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Intent;
 
 /*
@@ -41,8 +42,12 @@ public class OpenCVActivityPlugin extends CordovaPlugin {
 		if (requestCode == REQUEST_OPENCV_ACTIVITY) {
 			// Call Javascript with results
 			try {
-				JSONObject res = new JSONObject(intent.getStringExtra("result"));
-				currentCallbackContext.success(res);
+				if (resultCode == Activity.RESULT_OK) {
+					JSONObject res = new JSONObject(intent.getStringExtra("result"));
+					currentCallbackContext.success(res);
+				}
+				else 
+					currentCallbackContext.error("Request failed");
 			} catch (JSONException e) {
 				currentCallbackContext.error(e.getLocalizedMessage());
 			}

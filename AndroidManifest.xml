@@ -23,7 +23,8 @@
         <activity
             android:name="co.mwater.opencvactivity.OpenCVActivity"
 	        android:configChanges="keyboardHidden|keyboard|screenSize|locale"
-            android:label="@string/title_activity_open_cv" >
+            android:label="@string/title_activity_open_cv" 
+        	android:theme="@style/Theme.Sherlock.Light.DarkActionBar">
         </activity>
     </application>
 
