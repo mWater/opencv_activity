@@ -34,6 +34,7 @@ public:
 
 		AndroidBitmapInfo  screen_bitmap_info;
 		void*              screen_bitmap_pixels;
+
 		int ret;
 
 		if ((ret = AndroidBitmap_getInfo(env, screen_bitmap, &screen_bitmap_info)) < 0) {
