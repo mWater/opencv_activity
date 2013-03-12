@@ -45,10 +45,12 @@ public:
 			LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
 		}
 
-		// Create Mat
-		screen = new Mat(
+		// Create Mat of actual screen (ARGB)
+		screenARGB = new Mat(
 				Size(screen_bitmap_info.width, screen_bitmap_info.height),
 				CV_8UC4, screen_bitmap_pixels);// , screen_bitmap_info.stride);
+
+		screenBGR = new Mat(Size(screen_bitmap_info.width, screen_bitmap_info.height), CV_8UC3, Scalar(0,0,0));
 
 	}
 
@@ -76,10 +78,12 @@ public:
 	}
 
 	Ptr<Mat> getScreen() {
-		return screen;
+		return screenBGR;
 	}
 
 	void updateScreen() {
+		// Convert format
+		cvtColor(*screenBGR, *screenARGB, CV_BGR2RGBA);
 		jclass cls = env->FindClass("co/mwater/opencvactivity/OpenCVActivity");
 		jmethodID mth = env->GetMethodID(cls, "updateScreen", "()V");
 		env->CallVoidMethod(activity, mth);
@@ -94,7 +98,7 @@ public:
 	string returnValue;
 
 private:
-	Ptr<Mat> screen;
+	Ptr<Mat> screenARGB, screenBGR;
 	jobject screen_bitmap;
 	jobjectArray params;
 	JNIEnv* env;

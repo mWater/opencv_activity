@@ -27,7 +27,9 @@
 								</outputEntries>
 							</builder>
 							<tool id="com.android.gcc.compiler.536867364" name="Android GCC Compiler" superClass="com.android.gcc.compiler">
-								<option id="com.android.gcc.option.includePath.1785738191" superClass="com.android.gcc.option.includePath"/>
+								<option id="com.android.gcc.option.includePath.1785738191" superClass="com.android.gcc.option.includePath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${OPENCVROOT}/sdk/native/jni/include&quot;"/>
+								</option>
 								<inputType id="com.android.gcc.inputType.1671220649" superClass="com.android.gcc.inputType"/>
 							</tool>
 						</toolChain>
