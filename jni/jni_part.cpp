@@ -26,6 +26,25 @@ using namespace cv;
 #  define LOGE(...) printf("E/" LOG_TAG "(" ")" __VA_ARGS__)
 #endif
 
+static Mat getScreenTransform(Size image, Size screen) {
+	Point2f srcTri[3];
+	Point2f dstTri[3];
+
+	// Set 3 points to calculate the Affine Transform
+	srcTri[0] = Point2f(0, 0);
+	srcTri[1] = Point2f(image.width - 1, 0);
+	srcTri[2] = Point2f(0, image.height - 1);
+
+	// Calculate scale
+	double scale = min(screen.width * 1.0 / image.width, screen.height * 1.0 / image.height);
+
+	dstTri[0] = Point2f(0, 0);
+	dstTri[1] = srcTri[1]*scale;
+	dstTri[2] = srcTri[2]*scale;
+
+	return getAffineTransform(srcTri, dstTri);
+}
+
 class AndroidOpenCVActivityContext : public OpenCVActivityContext {
 public:
 	AndroidOpenCVActivityContext(JNIEnv* env, jobject activity, jobjectArray params, jobject screen_bitmap) :
@@ -77,17 +96,26 @@ public:
 		returnValue = val;
 	}
 
-	Ptr<Mat> getScreen() {
-		return screenBGR;
-	}
+	void updateScreen(Mat& screen) {
+		// Fit to screen
 
-	void updateScreen() {
+		// Create affine transform for screen
+		Mat screenMat = getScreenTransform(screen.size(), screenBGR->size());
+
+		// Create BGR screen
+		warpAffine(screen, *screenBGR, screenMat, screenBGR->size());
+
 		// Convert format
 		cvtColor(*screenBGR, *screenARGB, CV_BGR2RGBA);
 		jclass cls = env->FindClass("co/mwater/opencvactivity/OpenCVActivity");
 		jmethodID mth = env->GetMethodID(cls, "updateScreen", "()V");
 		env->CallVoidMethod(activity, mth);
 	}
+
+	void log(string msg) {
+		LOGI("%s", msg.c_str());
+	}
+
 
 	bool isAborted() {
 		jclass cls = env->FindClass("co/mwater/opencvactivity/OpenCVActivity");
@@ -106,21 +134,21 @@ private:
 };
 
 void demoAlgo(OpenCVActivityContext& context) {
-	Ptr<Mat> screen = context.getScreen();
+	Mat screen(500, 500, CV_8UC3);
 
-	putText(*screen, "Processing...", Point(30,30), FONT_HERSHEY_PLAIN,
+	putText(screen, "Processing...", Point(30,30), FONT_HERSHEY_PLAIN,
 			2, Scalar(0, 255, 0, 255));
 
 	// Animate circle
 	for (int i=0;i<100;i++)
 	{
-		circle(*screen, Point(100+i, 300), 20, Scalar(255, 0, 0, 255), 5);
-		context.updateScreen();
+		circle(screen, Point(100+i, 300), 20, Scalar(255, 0, 0, 255), 5);
+		context.updateScreen(screen);
 		usleep(100000);
 	}
 	LOGI("Called with %s", context.getParam(0).c_str());
 
-	context.setReturnValue("{\"test\:5}");
+	context.setReturnValue("{\"test\":5}");
 }
 
 extern "C" {
