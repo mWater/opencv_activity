@@ -1,6 +1,5 @@
 package co.mwater.opencvactivity;
 
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.Window;
@@ -18,6 +17,11 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 
+/**
+ * 
+ * @author clayton
+ *
+ */
 public class OpenCVActivity extends SherlockActivity {
 	private static final String TAG = OpenCVActivity.class.getSimpleName();
 	

@@ -8,18 +8,22 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 /*
- * Call using action "launch" with parameters processId, processParams, title.
+ * Call using action "process" with parameters processId, processParams, title.
+ * Call using action "processList" to get a list of processIds available
  */
 public class OpenCVActivityPlugin extends CordovaPlugin {
+	private static final String TAG = OpenCVActivityPlugin.class.getSimpleName();
+	
 	private static int REQUEST_OPENCV_ACTIVITY = 1234;
 	CallbackContext currentCallbackContext;
 
 	@Override
 	public boolean execute(String action, JSONArray args,
 			CallbackContext callbackContext) throws JSONException {
-		if ("launch".equals(action)) {
+		if ("process".equals(action)) {
 			// Launch OpenCV
 			currentCallbackContext = callbackContext;
 			Intent intent = new Intent(cordova.getActivity(), OpenCVActivity.class);
@@ -32,6 +36,16 @@ public class OpenCVActivityPlugin extends CordovaPlugin {
 				params[i]=paramsJSON.getString(i);
 			intent.putExtra("processParams", params);
 			cordova.startActivityForResult(this, intent, REQUEST_OPENCV_ACTIVITY);
+			return true;
+		}
+		if ("processList".equals(action)) {
+			Log.i(TAG, "processList called");
+			
+			// Get a list of processes available
+			JSONArray list = new JSONArray();
+			list.put("ec-plate");
+			list.put("demo");
+			callbackContext.success(list);
 			return true;
 		}
 		return false;
