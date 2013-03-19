@@ -36,11 +36,19 @@ static Mat getScreenTransform(Size image, Size screen) {
 	srcTri[2] = Point2f(0, image.height - 1);
 
 	// Calculate scale
-	double scale = min(screen.width * 1.0 / image.width, screen.height * 1.0 / image.height);
+	double scaleSame = min(screen.width * 1.0 / image.width, screen.height * 1.0 / image.height);
+	double scaleRt90 = min(screen.height * 1.0 / image.width, screen.width * 1.0 / image.height);
 
-	dstTri[0] = Point2f(0, 0);
-	dstTri[1] = srcTri[1]*scale;
-	dstTri[2] = srcTri[2]*scale;
+	if (scaleSame > scaleRt90) {
+		dstTri[0] = Point2f(0, 0);
+		dstTri[1] = srcTri[1] * scaleSame;
+		dstTri[2] = srcTri[2] * scaleSame;
+	}
+	else {
+		dstTri[0] = Point2f(image.height - 1, 0) * scaleRt90;
+		dstTri[1] = Point2f(image.height - 1, image.width - 1) * scaleRt90;
+		dstTri[2] = Point2f(0, 0);
+	}
 
 	return getAffineTransform(srcTri, dstTri);
 }
