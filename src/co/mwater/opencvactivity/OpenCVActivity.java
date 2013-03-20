@@ -18,9 +18,10 @@ import android.util.Log;
 import android.view.View;
 
 /**
- * 
+ * Activity which calls the OpenCV routine and displays the progress,
+ * as well as a title and an indefinite progress spinner.
+ *      
  * @author clayton
- *
  */
 public class OpenCVActivity extends SherlockActivity {
 	private static final String TAG = OpenCVActivity.class.getSimpleName();
@@ -121,6 +122,9 @@ public class OpenCVActivity extends SherlockActivity {
 		});
 	}
 
+	/*
+	 * View which displays the open CV image 
+	 */
 	class OpenCVView extends View {
 		Paint paint;
 		

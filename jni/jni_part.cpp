@@ -26,6 +26,9 @@ using namespace cv;
 #  define LOGE(...) printf("E/" LOG_TAG "(" ")" __VA_ARGS__)
 #endif
 
+/*
+ * Finds the affine transform to display the image within the screen
+ */
 static Mat getScreenTransform(Size image, Size screen) {
 	Point2f srcTri[3];
 	Point2f dstTri[3];
@@ -53,6 +56,9 @@ static Mat getScreenTransform(Size image, Size screen) {
 	return getAffineTransform(srcTri, dstTri);
 }
 
+/*
+ * Context to run the open CV process within an android activity
+ */
 class AndroidOpenCVActivityContext : public OpenCVActivityContext {
 public:
 	AndroidOpenCVActivityContext(JNIEnv* env, jobject activity, jobjectArray params, jobject screen_bitmap) :

@@ -12,3 +12,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+--------------------------------------
+
+This is a library for Android applications that allows calling of 
+OpenCV routines written in C++. The routines are run from an activity
+which can display the output as the processing is in progress.
+
+It also includes a Cordova plugin to allow the Activity to be launched from
+JavaScript applications. 

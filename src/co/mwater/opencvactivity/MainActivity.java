@@ -10,6 +10,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+/*
+ * Simple activity which tests the OpenCVActivity directly 
+ */
 public class MainActivity extends Activity {
 	private static final String TAG = MainActivity.class.getSimpleName();
 	private static int RESULT_OPENCV_ACTIVITY = 0;

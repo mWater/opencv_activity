@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.util.Log;
 
 /*
+ * Cordova/Phonegap plugin.
+ * 
  * Call using action "process" with parameters processId, processParams, title.
  * Call using action "processList" to get a list of processIds available
  */
