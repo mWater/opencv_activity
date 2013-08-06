@@ -1,11 +1,7 @@
 package co.mwater.opencvactivity;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.Window;
-
-import co.mwater.opencvactivity.R;
 import android.os.Bundle;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -23,7 +19,7 @@ import android.view.View;
  *      
  * @author clayton
  */
-public class OpenCVActivity extends SherlockActivity {
+public class OpenCVActivity extends Activity {
 	private static final String TAG = OpenCVActivity.class.getSimpleName();
 	
 	OpenCVView openCVView;
@@ -36,7 +32,7 @@ public class OpenCVActivity extends SherlockActivity {
 	boolean aborted = false;
 	
 	static {
-		System.loadLibrary("native_sample");
+		System.loadLibrary("opencvactivity");
 	}
 
 	@Override
@@ -47,13 +43,6 @@ public class OpenCVActivity extends SherlockActivity {
 		setTitle(this.getIntent().getStringExtra("title"));
 		processId = this.getIntent().getStringExtra("processId");
 		processParams = this.getIntent().getStringArrayExtra("processParams");
-		
-		// Show progress spinner
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		setSupportProgressBarIndeterminateVisibility(true);
-		
-		// Hide icon
-		this.getSupportActionBar().setDisplayShowHomeEnabled(false);
 		
 		openCVView = new OpenCVView(this);
 		setContentView(openCVView);
@@ -71,13 +60,6 @@ public class OpenCVActivity extends SherlockActivity {
 		aborted = true;
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getSupportMenuInflater().inflate(R.menu.open_cv, menu);
-		return true;
-	}
-	
 	void startProcess(int width, int height) {
 		// Prevent orientation changes
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);

@@ -10,7 +10,6 @@
 
     <application
         android:allowBackup="true"
-        android:theme="@style/Theme.Sherlock.Light.DarkActionBar"
         android:label="@string/app_name">
         <activity
             android:name="co.mwater.opencvactivity.MainActivity"
@@ -22,9 +21,8 @@
         </activity>
         <activity
             android:name="co.mwater.opencvactivity.OpenCVActivity"
-	        android:configChanges="keyboardHidden|keyboard|screenSize|locale"
-            android:label="@string/title_activity_open_cv" 
-        	android:theme="@style/Theme.Sherlock.Light.DarkActionBar">
+  	        android:configChanges="keyboardHidden|keyboard|screenSize|locale"
+            android:label="@string/title_activity_open_cv">
         </activity>
     </application>
 

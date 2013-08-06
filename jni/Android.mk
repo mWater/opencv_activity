@@ -8,7 +8,7 @@ OPENCV_LIB_TYPE:=STATIC
 
 include $(OPENCVROOT)/sdk/native/jni/OpenCV.mk
 
-LOCAL_MODULE    := native_sample
+LOCAL_MODULE    := opencvactivity
 LOCAL_SRC_FILES := jni_part.cpp ec-plates/algorithm.cpp ec-plates/Circle.cpp ec-plates/CircleFinder.cpp ec-plates/ColonyCounter.cpp 
 LOCAL_LDLIBS +=  -llog -ldl -ljnigraphics
 
