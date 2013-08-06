@@ -148,7 +148,7 @@ private:
 };
 
 void demoAlgo(OpenCVActivityContext& context) {
-	Mat screen(500, 500, CV_8UC3);
+	Mat screen(300, 300, CV_8UC3);
 
 	putText(screen, "Processing...", Point(30,30), FONT_HERSHEY_PLAIN,
 			2, Scalar(0, 255, 0, 255));
@@ -156,9 +156,10 @@ void demoAlgo(OpenCVActivityContext& context) {
 	// Animate circle
 	for (int i=0;i<100;i++)
 	{
-		circle(screen, Point(100+i, 300), 20, Scalar(255, 0, 0, 255), 5);
+		circle(screen, Point(100+i, 100), 20, Scalar(255, 0, 0, 255), 5);
 		context.updateScreen(screen);
 		usleep(100000);
+		LOGI("Iteration %d", i);
 	}
 	LOGI("Called with %s", context.getParam(0).c_str());
 
