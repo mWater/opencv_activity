@@ -65,31 +65,18 @@ public:
 		screen_bitmap(screen_bitmap), params(params), activity(activity) {
 		this->env = env;
 
-		AndroidBitmapInfo  screen_bitmap_info;
-		void*              screen_bitmap_pixels;
-
 		int ret;
 
-		if ((ret = AndroidBitmap_getInfo(env, screen_bitmap, &screen_bitmap_info)) < 0) {
+		if ((ret = AndroidBitmap_getInfo(env, screen_bitmap, &this->screen_bitmap_info)) < 0) {
 			LOGE("AndroidBitmap_getInfo() failed ! error=%d", ret);
 		    return;
 		}
-		if ((ret = AndroidBitmap_lockPixels(env, screen_bitmap, &screen_bitmap_pixels)) < 0) {
-			LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
-		}
-
-		// Create Mat of actual screen (ARGB)
-		screenARGB = new Mat(
-				Size(screen_bitmap_info.width, screen_bitmap_info.height),
-				CV_8UC4, screen_bitmap_pixels);// , screen_bitmap_info.stride);
 
 		screenBGR = new Mat(Size(screen_bitmap_info.width, screen_bitmap_info.height), CV_8UC3, Scalar(0,0,0));
 
 	}
 
 	~AndroidOpenCVActivityContext() {
-		LOGI("unlocking pixels");
-		AndroidBitmap_unlockPixels(env, screen_bitmap);
 	}
 
 	string getParam(int n) {
@@ -119,8 +106,26 @@ public:
 		// Create BGR screen
 		warpAffine(screen, *screenBGR, screenMat, screenBGR->size());
 
+		// Lock pixels
+		void*              screen_bitmap_pixels;
+		int ret;
+		if ((ret = AndroidBitmap_lockPixels(env, screen_bitmap, &screen_bitmap_pixels)) < 0) {
+			LOGE("AndroidBitmap_lockPixels() failed ! error=%d", ret);
+		}
+
+		// Create Mat of actual screen (ARGB)
+		Mat screenARGB = Mat(
+				Size(this->screen_bitmap_info.width, this->screen_bitmap_info.height),
+				CV_8UC4, screen_bitmap_pixels);// , screen_bitmap_info.stride);
+
 		// Convert format
-		cvtColor(*screenBGR, *screenARGB, CV_BGR2RGBA);
+		cvtColor(*screenBGR, screenARGB, CV_BGR2RGBA);
+
+		// Unlock pixels
+		LOGI("unlocking pixels");
+		AndroidBitmap_unlockPixels(env, screen_bitmap);
+
+		// Notify
 		jclass cls = env->FindClass("co/mwater/opencvactivity/OpenCVActivity");
 		jmethodID mth = env->GetMethodID(cls, "updateScreen", "()V");
 		env->CallVoidMethod(activity, mth);
@@ -140,11 +145,12 @@ public:
 	string returnValue;
 
 private:
-	Ptr<Mat> screenARGB, screenBGR;
+	Ptr<Mat> screenBGR;
 	jobject screen_bitmap;
 	jobjectArray params;
 	JNIEnv* env;
 	jobject activity;
+	AndroidBitmapInfo  screen_bitmap_info;
 };
 
 void demoAlgo(OpenCVActivityContext& context) {

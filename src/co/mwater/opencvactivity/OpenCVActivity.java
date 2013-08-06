@@ -93,15 +93,8 @@ public class OpenCVActivity extends Activity {
 
 	/* Updates the bitmap of the screen */
 	void updateScreen() {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (!aborted) {
-					Log.d(TAG, "Invalidating...");
-					openCVView.invalidate();
-				}
-			}
-		});
+		if (!aborted)
+			openCVView.postInvalidate();
 	}
 
 	/*
